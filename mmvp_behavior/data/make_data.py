@@ -269,7 +269,8 @@ def process(visions, chosen_behavior, OUT_DIR):
         save = False
         behavior = ''
         for _bh in CHOOSEN_BEHAVIORS:
-            if _bh in vision.split('/'):
+            if _bh in vision.split('/'):# splitting the path in order to allow us to loop over to find the behavior
+		selected_object = vision.split('/')[-5]# The path is object/trial/exec/behavior/file_name
                 behavior = _bh
                 save = True
                 break
