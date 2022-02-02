@@ -107,7 +107,7 @@ DESCRIPTORS_BY_OBJECT = {
     "eggcoloringcup_pink":["cup","plastic","small","cylindrical","pink","empty","short","light"],
     "eggcoloringcup_yellow":["cup","plastic","small","cylindrical","yellow","empty","short","light"],
     "medicine_ampicillin":["medicine","container","full","closed","plastic","pills","hard","transparent","orange","short","small"],
-    "medicine_aspirin":["medicine","container","full","closed","plastic","pills","hard","transparent","white","short small"],
+    "medicine_aspirin":["medicine","container","full","closed","plastic","pills","hard","transparent","white","short", "small"],
     "medicine_bilberry_extract":["medicine","container","full","closed","plastic","pills","hard","green","short","small"],
     "medicine_calcium":["medicine","container","full","closed","plastic","pills","hard","transparent","orange","short","small"],
     "medicine_flaxseed_oil":["medicine","container","full","closed","plastic","pills","hard","yellow","short","small"],
@@ -167,10 +167,10 @@ DESCRIPTOR_CODES = {'aluminum': 0, 'ball': 1, 'basket': 2, 'bear': 3,
     'metal': 33, 'multi-colored': 34, 'multicolor': 35, 'multicolored': 36, 'open': 37,
     'orange': 38, 'paper': 39, 'pasta': 40, 'pills': 41, 'pink': 42, 'pipe': 43,
     'plastic': 44, 'purple': 45, 'pvc': 46, 'rectangular': 47, 'red': 48, 'round': 49,
-    'rubber': 50, 'shiny': 51, 'short': 52, 'short small': 53, 'small': 54, 'soft': 55,
-    'squishy': 56, 'stick': 57, 'stuffed animal': 58, 'styrofoam': 59, 'tall': 60,
-    'toy': 61, 'transparent': 62, 'water bottle': 63,
-    'white': 64, 'wicker': 65, 'wide': 66, 'wood': 67, 'yellow': 68}
+    'rubber': 50, 'shiny': 51, 'short': 52, 'small': 53, 'soft': 54,
+    'squishy': 55, 'stick': 56, 'stuffed animal': 57, 'styrofoam': 58, 'tall': 59,
+    'toy': 60, 'transparent': 61, 'water bottle': 62,
+    'white': 63, 'wicker': 64, 'wide': 65, 'wood': 66, 'yellow': 67}
 
 BEHAVIORS = ['crush', 'grasp', 'lift_slow', 'shake', 'poke', 'push', 'tap', 'low_drop', 'hold']
 
