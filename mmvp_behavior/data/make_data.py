@@ -168,7 +168,7 @@ DESCRIPTOR_CODES = {'aluminum': 0, 'ball': 1, 'basket': 2, 'bear': 3,
     'orange': 38, 'paper': 39, 'pasta': 40, 'pills': 41, 'pink': 42, 'pipe': 43,
     'plastic': 44, 'purple': 45, 'pvc': 46, 'rectangular': 47, 'red': 48, 'round': 49,
     'rubber': 50, 'shiny': 51, 'short': 52, 'short, small': 53, 'small': 54, 'soft': 55,
-    'squishy': 56, 'stick': 57, 'stuffed, animal': 58, 'styrofoam': 59, 'tall': 60,
+    'squishy': 56, 'stick': 57, 'stuffed animal': 58, 'styrofoam': 59, 'tall': 60,
     'toy': 61, 'transparent': 62, 'water bottle': 63,
     'white': 64, 'wicker': 65, 'wide': 66, 'wood': 67, 'yellow': 68}
 
@@ -395,7 +395,7 @@ def process(visions, chosen_behavior, OUT_DIR):
         behavior = ''
         for _bh in CHOOSEN_BEHAVIORS:
             if _bh in vision.split('/'):# splitting the path in order to allow us to loop over to find the behavior
-                selected_object = vision.split('/')[-5]# The path is object/trial/exec/behavior/file_name
+                selected_object = vision.split('/')[-4]# The path is object/trial/exec/behavior/file_name (visions does not include file names)
                 behavior = _bh
                 save = True
                 break
