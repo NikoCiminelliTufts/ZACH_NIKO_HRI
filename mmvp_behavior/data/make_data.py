@@ -121,6 +121,7 @@ DESCRIPTORS_BY_OBJECT = {
     "noodle_3":["pink","foam","soft","deformable","toy","light"],
     "noodle_4":["pink","foam","soft","deformable","toy","tall","light"],
     "noodle_5":["pink","foam","soft","deformable","toy","tall","light","big"],
+    "no_object":[],
     "pasta_cremette":["green","multicolored","small","pasta","box","paper","container","full","closed","deformable","rectangular"],
     "pasta_macaroni":["blue","multicolored","pasta","box","paper","container","full","closed","deformable","rectangular"],
     "pasta_penne":["yellow","multicolored","pasta","box","paper","container","full","closed","deformable","large","rectangular"],
