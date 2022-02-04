@@ -5,7 +5,8 @@ import torch
 import PIL.Image
 from options import Options
 from model import Model
-import os, cv2
+import cv2
+import pickle as pkl
 from torchvision.transforms import functional as F
 
 
@@ -40,16 +41,16 @@ def predict_baseline(weight, filelist):
     model = Model(opt)
     model.load_weight()
     resultlist, _ = model.predict(filelist)
+    pkl.dump(resultlist,"test.npy")
     outputlist = []
     for result in resultlist:   
-        for frame in result:
-            print(frame)
-    
-            squeeze_frame = frame.squeeze()
-            permute_frame = squeeze_frame.permute([1,2,0])
-            cpu_frame = permute_frame.cpu()
-            detach_frame = cpu_frame.detach()
-            outputlist.append(np.asarray(detach_frame.numpy()*255,uint8))
+        for something in result:
+            for frame in something:
+                squeeze_frame = frame.squeeze()
+                permute_frame = squeeze_frame.permute([1,2,0])
+                cpu_frame = permute_frame.cpu()
+                detach_frame = cpu_frame.detach()
+                outputlist.append(np.asarray(detach_frame.numpy()*255,"uint8"))
                       
     return outputlist
 
