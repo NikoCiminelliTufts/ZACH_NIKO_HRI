@@ -41,7 +41,7 @@ def predict_baseline(weight, filelist):
     model = Model(opt)
     model.load_weight()
     resultlist, _ = model.predict(filelist)
-    with open("test.npy","w") as file:
+    with open("test.npy","wb") as file:
         pkl.dump(resultlist,file)
     outputlist = []
     for result in resultlist:   
