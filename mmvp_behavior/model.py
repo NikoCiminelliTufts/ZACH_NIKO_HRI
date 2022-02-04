@@ -60,7 +60,15 @@ class Model:
 
             recon_loss, haptic_loss, audio_loss, vibro_loss = 0.0, 0.0, 0.0, 0.0
             loss, psnr = 0.0, 0.0
-
+            '''
+                Line 80-85 
+                
+                At start index:
+                    default index: gen_images =3 & image = 4
+                    The 4th image generates the predicted 5th image & the 5th image is represented 
+                    We find the loss between the actual 5th image and predicted
+                Then we loop through the rest of the frames in both lists and perform the same operation
+            '''
             for i, (image, gen_image) in enumerate(
                     zip(images[self.opt.context_frames:], gen_images[self.opt.context_frames-1:])):
                 recon_loss += self.mse_loss(image, gen_image)
