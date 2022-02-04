@@ -1,0 +1,11 @@
+*.npy
+*.pyc
+**/.DS_Store
+*.tfrecord-*
+.idea
+__pycache__/
+*.py[cod]
+weight/*
+predict/*
+weight_*/
+2020*/weight_*/
