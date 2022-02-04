@@ -129,12 +129,15 @@ class CY101Dataset(Dataset):
 
 
 def build_dataloader_CY101(opt):
+    # this is inherited code that returns im unchanged
+    # keeping because of potential dependencies
     def crop(im):
         height, width = im.shape[1:]
         width = max(height, width)
         im = im[:, :width, :width]
         return im
 
+    # this is no longer used
     def padding(au):
         length = au.shape[1]
         if length < AUDIO_LENGTH:
@@ -142,6 +145,8 @@ def build_dataloader_CY101(opt):
         au = au[:, :AUDIO_LENGTH,:]
         return au
 
+    # class to normalize haptic and vibro data to zero mean and unit standard
+    # deviation
     class Standardizer:
         def __init__(self, mean, std):
             if not isinstance(mean, torch.Tensor) and not isinstance(std, torch.Tensor):
@@ -154,16 +159,19 @@ def build_dataloader_CY101(opt):
         def __call__(self, hp):
             return (hp-self.mean)/self.std
 
+    # no longer in use
     def addnoise_au(au):
         au = au + torch.rand_like(au, device=au.device)*10
         au[au>255]=255
         au[au<0]=0
         return au
 
+    # adds random noise to haptic data (possible stochastic resonance?)
     def addnoise_hp(hp):
         hp = hp + torch.rand_like(hp, device=hp.device)
         return hp
 
+    # prepare image preprocessing sequence for the dataset
     image_transform = transforms.Compose([
         transforms.Lambda(crop),
         transforms.ToPILImage(),
@@ -171,6 +179,7 @@ def build_dataloader_CY101(opt):
         transforms.ToTensor()
     ])
 
+    # 
     audio_transform = transforms.Compose([
         transforms.Lambda(lambda x:x.byte()),
         transforms.ToPILImage(),
