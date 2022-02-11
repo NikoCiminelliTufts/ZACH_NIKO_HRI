@@ -3,10 +3,12 @@ import torch
 from torch import nn
 import cv2
 import numpy as np
-from networks import network, baseline
-from data import build_dataloader_CY101
+from .networks import network, baseline
+from .data import build_dataloader_CY101
 from torch.nn import functional as F
-from metrics import calc_ssim, mse_to_psnr
+from .metrics import calc_ssim, mse_to_psnr
+import re
+from .data import generate_npy_vibro,generate_npy_haptic,generate_npy_audio,generate_npy_vision, BEHAVIORS
 
 
 def peak_signal_to_noise_ratio(true, pred):
@@ -191,9 +193,7 @@ class Model():
 
     def predict(self, files):
         with torch.no_grad():
-            import re
-            import numpy as np
-            from data import generate_npy_vibro,generate_npy_haptic,generate_npy_audio,generate_npy_vision, BEHAVIORS
+            
             datas = []
             ret = []
             gt = []
@@ -204,13 +204,13 @@ class Model():
                 audio = os.path.join(re.sub(r'vision_data_part[1-4]', 'rc_data', vision), 'hearing', '*.wav')
                 vibro = os.path.join(re.sub(r'vision_data_part[1-4]', 'rc_data', vision), 'vibro', '*.tsv')
 
-                out_vision_npys, n_frames = generate_npy_vision(vision, vision.split('/')[-1], 20)
-                out_audio_npys = generate_npy_audio(audio, n_frames, vision.split('/')[-1], 20)
-                out_haptic_npys, bins = generate_npy_haptic(haptic1, haptic2, n_frames, vision.split('/')[-1], 20)
-                out_vibro_npys = generate_npy_vibro(vibro, n_frames, bins, vision.split('/')[-1], 20)
+                out_vision_npys, n_frames = generate_npy_vision(vision, vision.split(os.sep)[-1], 20)
+                out_audio_npys = generate_npy_audio(audio, n_frames, vision.split(os.sep)[-1], 20)
+                out_haptic_npys, bins = generate_npy_haptic(haptic1, haptic2, n_frames, vision.split(os.sep)[-1], 20)
+                out_vibro_npys = generate_npy_vibro(vibro, n_frames, bins, vision.split(os.sep)[-1], 20)
 
                 out_behavior_npys = np.zeros(len(BEHAVIORS))
-                out_behavior_npys[BEHAVIORS.index(vision.split('/')[-1])] = 1
+                out_behavior_npys[BEHAVIORS.index(vision.split(os.sep)[-1])] = 1
                 out_behavior_npys = torch.from_numpy(out_behavior_npys).float().to(self.device)
 
                 for out_vision_npy, out_haptic_npy, out_audio_npy, out_vibro_npy in \
