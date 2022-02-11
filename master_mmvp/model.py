@@ -132,6 +132,7 @@ class Model():
         with torch.no_grad():
             loss = [[] for _ in range(self.opt.sequence_length - self.opt.context_frames)]
             for iter_, (images, haptics, audios, behaviors, vibros) in enumerate(self.dataloader['valid']):
+                # create dummy arrays for inputs we're not using
                 if not self.opt.use_haptic:
                     haptics = torch.zeros_like(haptics).to(self.device)
                 if not self.opt.use_behavior:
@@ -141,6 +142,7 @@ class Model():
                 if not self.opt.use_vibro:
                     vibros = torch.zeros_like(vibros).to(self.device)
 
+                # 
                 behaviors = behaviors.unsqueeze(-1).unsqueeze(-1)
                 images = images.permute([1, 0, 2, 3, 4]).unbind(0)
                 haptics = haptics.permute([1, 0, 2, 3, 4]).unbind(0)
