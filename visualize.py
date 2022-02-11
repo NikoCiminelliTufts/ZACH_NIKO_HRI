@@ -42,6 +42,9 @@ if __name__ == "__main__":
                 image_array = (rgb_last*255).astype("uint8")
                 
                 image = Image.fromarray(image_array)
-                save_path = os.path.join(opt.output_dir, trial_path, f'image{i}.png')
-                image.save(save_path)
+                save_path = os.path.join(opt.output_dir, trial_path)
+                if(os.path.exists(save_path) == False):
+                    os.makedirs(save_path)
+                save_file = os.path.join(save_path, f'image{i}.png')
+                image.save(save_file)
                 i += 1
