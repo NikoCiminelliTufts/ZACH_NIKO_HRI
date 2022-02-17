@@ -3,6 +3,7 @@ from operator import mul
 from mmvp_behavior.options import Options
 from master_mmvp.model import Model
 from master_mmvp.data.make_data import IMG_SIZE
+from master_mmvp.data.make_data import BEHAVIORS
 import master_mmvp.metrics as metrics
 import glob
 import os
@@ -20,12 +21,18 @@ def predict(opt):
     model = Model(opt)
     model.load_weight()
 
-    # predict images by trial
+    # find raw input files
     folder_glob = glob.glob(os.path.join(opt.vis_raw_input_dir, 'v*', '*', '*', '*', '*'))
     if len(folder_glob) == 0:
         print("Error: vis_raw_input_dir not properly set")
         return
     for folder in folder_glob:
+        # bypass unused behaviors
+        behavior_in_folder_name = folder.split(os.sep)[-1]
+        if behavior_in_folder_name not in BEHAVIORS:
+            continue
+
+        # predict images by trial
         folder = str(folder)
         reformatted_folder= [{'vision': folder}]
         resultlist, _ = model.predict(reformatted_folder)
@@ -48,24 +55,21 @@ def predict(opt):
                 save_file = os.path.join(save_path, f'image{i}.png')
                 image.save(save_file)
                 i += 1
-            break
+            break # skip additional blocks for simplicity
 
 ## evaluate takes an Options object from options.py
 # and computes the SSIM of each predicted image vs its raw counterpart
 def evaluate(opt):
     # gather data
-    raw_folders = glob.glob(os.path.join(opt.vis_raw_input_dir, 'v*', '*', '*', '*', '*'))
     predict_folders = glob.glob(os.path.join(opt.output_dir, 'v*', '*', '*', '*', '*'))
-    if len(raw_folders) == 0:
-        print("Error: vis_raw_input_dir not properly set")
-        return
     if len(predict_folders) == 0:
         print("Error: output_dir not properly set")
         return
 
     # extract data
     for folder_i in range(1):
-        raw_folder = raw_folders[folder_i]
+        relative_folder = predict_folders[folder_i].split(os.sep)
+        raw_folder = os.path.join(opt.vis_raw_input_dir, relative_folder[-5:])
         predict_folder = predict_folders[folder_i]
 
         raw_images = glob.glob(os.path.join(raw_folder,"*.jpg"))
