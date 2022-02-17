@@ -72,8 +72,8 @@ def evaluate(opt):
 
         # evaluate ssim
         for image_i in range(len(predict_images)):
-            raw_image = Image.Image.load(raw_images[image_i])
-            predicted_image = Image.Image.load(predict_images[image_i])
+            raw_image = Image.open(raw_images[image_i])
+            predicted_image = Image.open(predict_images[image_i])
             print(metrics.calc_ssim(raw_image, predicted_image))
 
 ## visualization routine
