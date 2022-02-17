@@ -57,7 +57,7 @@ def evaluate(opt):
         print("Error: vis_raw_input_dir not properly set")
         return
     if len(predict_folders) == 0:
-        print("Error: outpu_dir not properly set")
+        print("Error: output_dir not properly set")
         return
 
     # extract data
@@ -72,7 +72,9 @@ def evaluate(opt):
 
         # evaluate ssim
         for image_i in range(len(predict_images)):
-            print(metrics.calc_ssim(raw_images[image_i], predict_images[image_i]))
+            raw_image = Image.Image.load(raw_images[image_i])
+            predicted_image = Image.Image.load(predict_images[image_i])
+            print(metrics.calc_ssim(raw_image, predicted_image))
 
 ## visualization routine
 if __name__ == "__main__":
