@@ -9,6 +9,8 @@ import glob
 import os
 from PIL import Image
 import numpy as np
+import matplotlib.pyplot as plt
+import string
 
 ## predict takes an Options object from options.py
 # and computes and stores a series of predicted images for all input data
@@ -57,9 +59,12 @@ def predict(opt):
                 i += 1
             break # skip additional blocks for simplicity
 
+def namesort(a):
+    return len(a), a
+
 ## evaluate takes an Options object from options.py
 # and computes the SSIM of each predicted image vs its raw counterpart
-def evaluate(opt):
+def evaluate(opt, debug=False):
     # gather data
     predict_folders = glob.glob(os.path.join(opt.output_dir, 'v*', '*', '*', '*', '*'))
     if len(predict_folders) == 0:
@@ -78,9 +83,10 @@ def evaluate(opt):
         print(relative_folder)
         
         raw_images = glob.glob(os.path.join(raw_folder,"*.jpg"))
-        raw_images.sort()
+        raw_images.sort(key=namesort)
         predict_images = glob.glob(os.path.join(predict_folder,"*.png"))
-        predict_images.sort()
+        predict_images.sort(key=namesort)
+        print("\n".join(predict_images))
 
         # evaluate ssim
         trial_scores = []
@@ -90,8 +96,16 @@ def evaluate(opt):
             raw_image = raw_image.convert("L")
             predicted_image = Image.open(predict_images[image_i])
             predicted_image = predicted_image.convert("L")
-            score, _ = metrics.calc_ssim(np.asarray(raw_image), np.asarray(predicted_image), multichannel=True)
+            score, _ = metrics.calc_ssim(np.asarray(raw_image), np.asarray(predicted_image), multichannel=False)
             trial_scores.append(score)
+
+            if debug == True:
+                fig, ax = plt.subplots(1,2)
+                ax[0].imshow(raw_image)
+                ax[1].imshow(predicted_image)
+                ax[0].set(title=score)
+                plt.show()
+                input()
 
         all_scores.append(trial_scores)
 
@@ -116,6 +130,7 @@ if __name__ == "__main__":
     opt.parser.add_argument('--predict', action="store_true", help="use this if you want to generate predicted images")
     opt.parser.add_argument('--evaluate', action="store_true", help="use this if you want to generate plots evaluating predictions")
     opt.parser.add_argument('--behavior', nargs="+", action="append", default=None, help="")
+    opt.parser.add_argument('--debug', action="store_true", help="")
     opt = opt.parse()
     opt.baseline = False
     opt.sequence_length = 20
@@ -124,6 +139,6 @@ if __name__ == "__main__":
         predict(opt)
 
     if opt.evaluate == True:
-        evaluate(opt)
+        evaluate(opt, opt.debug)
     
     
