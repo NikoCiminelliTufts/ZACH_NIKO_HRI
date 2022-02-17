@@ -21,7 +21,7 @@ def predict(opt):
     model.load_weight()
 
     # predict images by trial
-    folder_glob = glob.glob(os.path.join(opt.vis_raw_input_dir, 'v*', '*', '*', '*', 'lift*'))
+    folder_glob = glob.glob(os.path.join(opt.vis_raw_input_dir, 'v*', '*', '*', '*', '*'))
     if len(folder_glob) == 0:
         print("Error: vis_raw_input_dir not properly set")
         return
