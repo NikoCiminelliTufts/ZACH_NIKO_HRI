@@ -1,6 +1,8 @@
 # imports
+from operator import mul
 from mmvp_behavior.options import Options
 from master_mmvp.model import Model
+from master_mmvp.data.make_data import IMG_SIZE
 import master_mmvp.metrics as metrics
 import glob
 import os
@@ -65,7 +67,7 @@ def evaluate(opt):
         raw_folder = raw_folders[folder_i]
         predict_folder = predict_folders[folder_i]
 
-        raw_images = glob.glob(os.path.join(raw_folder,"*.png"))
+        raw_images = glob.glob(os.path.join(raw_folder,"*.jpg"))
         raw_images.sort()
         predict_images = glob.glob(os.path.join(predict_folder,"*.png"))
         predict_images.sort()
@@ -73,8 +75,12 @@ def evaluate(opt):
         # evaluate ssim
         for image_i in range(len(predict_images)):
             raw_image = Image.open(raw_images[image_i])
+            raw_image = raw_image.resize(IMG_SIZE)
+            raw_image = raw_image.convert("L")
             predicted_image = Image.open(predict_images[image_i])
-            print(metrics.calc_ssim(raw_image, predicted_image))
+            predicted_image = predicted_image.convert("L")
+            score, _ = metrics.calc_ssim(np.asarray(raw_image), np.asarray(predicted_image), multichannel=True)
+            print(score)
 
 ## visualization routine
 if __name__ == "__main__":

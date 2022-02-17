@@ -9,8 +9,8 @@ def mse_to_psnr(mse):
     return (10.0 * torch.log(torch.tensor(1.0) / mse) / torch.log(torch.tensor(10.0))).numpy()
 
 
-def calc_ssim(ground_truth, target):
-    (score, diff) = compare_ssim(ground_truth, target, full=True)
+def calc_ssim(ground_truth, target, multichannel=False):
+    (score, diff) = compare_ssim(ground_truth, target, full=True, multichannel=multichannel)
     diff = (diff*255).astype("uint8")
     return score, diff
 
