@@ -20,6 +20,9 @@ def predict(opt):
 
     # predict images by trial
     folder_glob = glob.glob(os.path.join(opt.vis_raw_input_dir, 'v*', '*', '*', '*', 'lift*'))
+    if len(folder_glob) == 0:
+        print("Error: vis_raw_input_dir not properly set")
+        return
     for folder in folder_glob:
         folder = str(folder)
         reformatted_folder= [{'vision': folder}]
@@ -50,20 +53,39 @@ def evaluate(opt):
     # gather data
     raw_folders = glob.glob(os.path.join(opt.vis_raw_input_dir, 'v*', '*', '*', '*', 'lift*'))
     predict_folders = glob.glob(os.path.join(opt.output_dir, 'v*', '*', '*', '*', 'lift*'))
+    if len(raw_folders) == 0:
+        print("Error: vis_raw_input_dir not properly set")
+        return
+    if len(predict_folders) == 0:
+        print("Error: outpu_dir not properly set")
+        return
 
+    # extract data
     for folder_i in range(1):
         raw_folder = raw_folders[folder_i]
         predict_folder = predict_folders[folder_i]
 
-        raw_images = glob.glob(os.path.join(raw_folder,"*")).sort()
-        predict_images = glob.glob(os.path.join(predict_folder,"*")).sort()
+        raw_images = glob.glob(os.path.join(raw_folder,"*"))
+        raw_images.sort()
+        predict_images = glob.glob(os.path.join(predict_folder,"*"))
+        predict_images.sort()
 
+        # evaluate ssim
         for image_i in range(len(predict_images)):
             print(metrics.calc_ssim(raw_images[image_i], predict_images[image_i]))
 
 ## visualization routine
 if __name__ == "__main__":
     # parse and set normal and visualization specific arguments
+    # expects arguments as follows:
+    #     --vis_raw_input_dir [path to raw data]
+    #     --data_dir [path to preprocessed data]
+    #     --output_dir [path to predicted images]
+    # if doing prediction, also requires
+    #     --predict
+    #     --pretrained_model [path to the model to predict with]
+    # if doing evaluation, also requires
+    #     --evaluate
     opt = Options()
     opt.parser.add_argument('--vis_raw_input_dir', type=str, default="", help='directory with raw data to visualize output')
     opt.parser.add_argument('--predict', action="store_true", help="use this if you want to generate predicted images")
@@ -72,7 +94,7 @@ if __name__ == "__main__":
     opt.baseline = False
     opt.sequence_length = 20
     
-    if opt.predict == False:
+    if opt.predict == True:
         predict(opt)
 
     if opt.evaluate == True:
