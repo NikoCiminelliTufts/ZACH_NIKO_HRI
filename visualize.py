@@ -65,9 +65,9 @@ def evaluate(opt):
         raw_folder = raw_folders[folder_i]
         predict_folder = predict_folders[folder_i]
 
-        raw_images = glob.glob(os.path.join(raw_folder,"*"))
+        raw_images = glob.glob(os.path.join(raw_folder,"*.png"))
         raw_images.sort()
-        predict_images = glob.glob(os.path.join(predict_folder,"*"))
+        predict_images = glob.glob(os.path.join(predict_folder,"*.png"))
         predict_images.sort()
 
         # evaluate ssim
