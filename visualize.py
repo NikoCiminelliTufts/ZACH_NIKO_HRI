@@ -86,7 +86,7 @@ def evaluate(opt, debug=False):
         raw_images.sort(key=namesort)
         predict_images = glob.glob(os.path.join(predict_folder,"*.png"))
         predict_images.sort(key=namesort)
-        print("\n".join(predict_images))
+        #print("\n".join(predict_images))
 
         # evaluate ssim
         trial_scores = []
@@ -110,7 +110,7 @@ def evaluate(opt, debug=False):
         all_scores.append(trial_scores)
 
     all_scores = np.asarray(all_scores)
-    print(all_scores)
+    #print(all_scores)
     print(np.nanmean(all_scores,0))
 
 ## visualization routine
