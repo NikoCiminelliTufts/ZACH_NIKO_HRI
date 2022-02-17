@@ -67,9 +67,12 @@ def evaluate(opt):
         return
 
     # extract data
-    for folder_i in range(1):
+    scores = []
+    for folder_i in range(len(predict_folders)):
         relative_folder = predict_folders[folder_i].split(os.sep)
-        raw_folder = os.path.join(opt.vis_raw_input_dir, relative_folder[-5:])
+        if type(opt.behavior) != type(None) and relative_folder[-1] not in opt.behavior[0]:
+            continue
+        raw_folder = os.path.join(opt.vis_raw_input_dir, *relative_folder[-5:])
         predict_folder = predict_folders[folder_i]
 
         raw_images = glob.glob(os.path.join(raw_folder,"*.jpg"))
@@ -85,7 +88,10 @@ def evaluate(opt):
             predicted_image = Image.open(predict_images[image_i])
             predicted_image = predicted_image.convert("L")
             score, _ = metrics.calc_ssim(np.asarray(raw_image), np.asarray(predicted_image), multichannel=True)
-            print(score)
+            scores.append(score)
+
+    scores = np.asarray(scores)
+    print(np.mean(scores,1))
 
 ## visualization routine
 if __name__ == "__main__":
@@ -103,6 +109,7 @@ if __name__ == "__main__":
     opt.parser.add_argument('--vis_raw_input_dir', type=str, default="", help='directory with raw data to visualize output')
     opt.parser.add_argument('--predict', action="store_true", help="use this if you want to generate predicted images")
     opt.parser.add_argument('--evaluate', action="store_true", help="use this if you want to generate plots evaluating predictions")
+    opt.parser.add_argument('--behavior', nargs="+", action="append", default=None, help="")
     opt = opt.parse()
     opt.baseline = False
     opt.sequence_length = 20
