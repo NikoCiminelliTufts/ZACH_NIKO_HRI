@@ -48,13 +48,14 @@ def predict(opt):
                 save_file = os.path.join(save_path, f'image{i}.png')
                 image.save(save_file)
                 i += 1
+            break
 
 ## evaluate takes an Options object from options.py
 # and computes the SSIM of each predicted image vs its raw counterpart
 def evaluate(opt):
     # gather data
-    raw_folders = glob.glob(os.path.join(opt.vis_raw_input_dir, 'v*', '*', '*', '*', 'lift*'))
-    predict_folders = glob.glob(os.path.join(opt.output_dir, 'v*', '*', '*', '*', 'lift*'))
+    raw_folders = glob.glob(os.path.join(opt.vis_raw_input_dir, 'v*', '*', '*', '*', '*'))
+    predict_folders = glob.glob(os.path.join(opt.output_dir, 'v*', '*', '*', '*', '*'))
     if len(raw_folders) == 0:
         print("Error: vis_raw_input_dir not properly set")
         return
