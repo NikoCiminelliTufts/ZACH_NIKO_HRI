@@ -67,20 +67,23 @@ def evaluate(opt):
         return
 
     # extract data
-    scores = []
+    all_scores = []
     for folder_i in range(len(predict_folders)):
         relative_folder = predict_folders[folder_i].split(os.sep)
         if type(opt.behavior) != type(None) and relative_folder[-1] not in opt.behavior[0]:
+            print("skipping " + relative_folder[-1])
             continue
         raw_folder = os.path.join(opt.vis_raw_input_dir, *relative_folder[-5:])
         predict_folder = predict_folders[folder_i]
-
+        print(relative_folder)
+        
         raw_images = glob.glob(os.path.join(raw_folder,"*.jpg"))
         raw_images.sort()
         predict_images = glob.glob(os.path.join(predict_folder,"*.png"))
         predict_images.sort()
 
         # evaluate ssim
+        trial_scores = []
         for image_i in range(len(predict_images)):
             raw_image = Image.open(raw_images[image_i])
             raw_image = raw_image.resize(IMG_SIZE)
@@ -88,10 +91,13 @@ def evaluate(opt):
             predicted_image = Image.open(predict_images[image_i])
             predicted_image = predicted_image.convert("L")
             score, _ = metrics.calc_ssim(np.asarray(raw_image), np.asarray(predicted_image), multichannel=True)
-            scores.append(score)
+            trial_scores.append(score)
 
-    scores = np.asarray(scores)
-    print(np.mean(scores,1))
+        all_scores.append(trial_scores)
+
+    all_scores = np.asarray(all_scores)
+    print(all_scores)
+    print(np.nanmean(all_scores,0))
 
 ## visualization routine
 if __name__ == "__main__":
