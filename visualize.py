@@ -29,6 +29,7 @@ def predict(opt):
         print("Error: vis_raw_input_dir not properly set")
         return
     for folder in folder_glob:
+        
         # bypass unused behaviors
         behavior_in_folder_name = folder.split(os.sep)[-1]
         if behavior_in_folder_name not in BEHAVIORS:
@@ -36,11 +37,9 @@ def predict(opt):
 
         # bypass a bad exec
         folder = str(folder)
-        try:
-            folder.index(os.path.join("basket_cylinder","trial_1","exec_5"))
+        relative_folder = folder.split(os.sep)[-4:]
+        if not os.access(os.join(opt.vis_raw_input_dir,'rc_data',*relative_folder),os.F_OK):
             continue
-        except:
-            pass
 
         # predict images by trial
         reformatted_folder= [{'vision': folder}]
