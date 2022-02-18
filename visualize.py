@@ -38,7 +38,7 @@ def predict(opt):
         # bypass a bad exec
         folder = str(folder)
         relative_folder = folder.split(os.sep)[-4:]
-        if not os.access(os.join(opt.vis_raw_input_dir,'rc_data',*relative_folder),os.F_OK):
+        if not os.access(os.path.join(opt.vis_raw_input_dir,'rc_data',*relative_folder),os.F_OK):
             continue
 
         # predict images by trial
