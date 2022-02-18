@@ -34,8 +34,15 @@ def predict(opt):
         if behavior_in_folder_name not in BEHAVIORS:
             continue
 
-        # predict images by trial
+        # bypass a bad exec
         folder = str(folder)
+        try:
+            folder.index(os.path.join("basket_cylinder","trial_1","exec_5"))
+            continue
+        except:
+            pass
+
+        # predict images by trial
         reformatted_folder= [{'vision': folder}]
         resultlist, _ = model.predict(reformatted_folder)
 
