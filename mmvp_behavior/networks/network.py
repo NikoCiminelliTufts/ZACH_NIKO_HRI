@@ -23,7 +23,7 @@ class network(nn.Module):
                  context_frames=2,
                  DNA_KERN_SIZE = 5,
                  HAPTIC_LAYER = 16,
-                 BEHAVIOR_LAYER = 9,
+                 BEHAVIOR_LAYER = 77,
                  AUDIO_LAYER = 16,
                  VIBRO_LAYER = 16
                  ):
@@ -270,8 +270,10 @@ class network(nn.Module):
 
         return gen_images, gen_haptics, gen_audios, gen_vibros
 
+    # prepare inputs to enc3, create it and return it
     def interaction(self, vis_feat, haptic, audio, vibro, behaviors, haptic_feat_state, audio_feat_state, vibro_feat_state):
 
+        # make behavior feature tensor the same shape as visual feature vector in all but one dimension
         behavior_feat = behaviors.repeat(1, 1, vis_feat.shape[2] // behaviors.shape[2], vis_feat.shape[3] // behaviors.shape[3])
         enc2 = [vis_feat, behavior_feat]
 
@@ -289,6 +291,7 @@ class network(nn.Module):
 
         enc2 = torch.cat(enc2, dim=1)
 
+        # requires shape of enc2 to match expected input shape of enc3
         enc3 = torch.relu(self.enc3(enc2))
 
         return enc3, haptic_feat_state, audio_feat_state, vibro_feat_state
