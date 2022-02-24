@@ -143,7 +143,7 @@ class network(nn.Module):
 
         if self.VIBRO_LAYER != 0:
             self.vibro_feat = vibro_feat(self.VIBRO_LAYER)
-            self.vibro_feat.RELUhead = vibro_head(self.lstm_size[3])
+            self.vibro_head = vibro_head(self.lstm_size[3])
 
     def forward(self, images, haptics, audios, behaviors, vibros, train=True):
         '''
