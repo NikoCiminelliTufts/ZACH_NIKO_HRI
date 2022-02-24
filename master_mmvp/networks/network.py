@@ -24,7 +24,7 @@ class network(nn.Module):
                  context_frames=2,
                  DNA_KERN_SIZE = 5,
                  HAPTIC_LAYER = 16,
-                 BEHAVIOR_LAYER = 9,
+                 BEHAVIOR_LAYER = 77,
                  AUDIO_LAYER = 16,
                  VIBRO_LAYER = 16
                  ):
