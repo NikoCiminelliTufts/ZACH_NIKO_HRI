@@ -47,7 +47,10 @@ def predict(opt):
 
         # predict images by trial
         reformatted_folder = [{'vision': folder}]
-        out_behavior_npys = compute_behavior(BEHAVIORS, behavior_in_folder_name, object_in_folder_name)
+        if opt.use_descriptors == True:
+            out_behavior_npys = compute_behavior(BEHAVIORS, behavior_in_folder_name, object_in_folder_name)
+        else:
+            output_behavior_npys = None
         resultlist, _ = model.predict(reformatted_folder, out_behavior_npys)
 
         # save images within the trial
@@ -142,6 +145,7 @@ if __name__ == "__main__":
     opt.parser.add_argument('--evaluate', action="store_true", help="use this if you want to generate plots evaluating predictions")
     opt.parser.add_argument('--behavior', nargs="+", action="append", default=None, help="")
     opt.parser.add_argument('--debug', action="store_true", help="")
+    opt.parser.add_argument('--use_descriptors', action="store_true", help="")
     opt = opt.parse()
     opt.baseline = False
     opt.sequence_length = 20
