@@ -1,5 +1,5 @@
 # imports
-from operator import mul
+from mmvp_behavior.data.make_data import compute_behavior
 from mmvp_behavior.options import Options
 from master_mmvp.model import Model
 from master_mmvp.data.make_data import IMG_SIZE
@@ -10,7 +10,6 @@ import os
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
-import string
 
 ## predict takes an Options object from options.py
 # and computes and stores a series of predicted images for all input data
@@ -24,6 +23,8 @@ def predict(opt):
     model.load_weight()
 
     # find raw input files
+    # looking for directory structure:
+    # vision_data*/object name/trial num/exec num/behavior name
     folder_glob = glob.glob(os.path.join(opt.vis_raw_input_dir, 'v*', '*', '*', '*', '*'))
     if len(folder_glob) == 0:
         print("Error: vis_raw_input_dir not properly set")
@@ -35,6 +36,9 @@ def predict(opt):
         if behavior_in_folder_name not in BEHAVIORS:
             continue
 
+        # select object
+        object_in_folder_name = folder.split(os.sep)[-4]
+
         # bypass a bad exec
         folder = str(folder)
         relative_folder = folder.split(os.sep)[-4:]
@@ -42,8 +46,9 @@ def predict(opt):
             continue
 
         # predict images by trial
-        reformatted_folder= [{'vision': folder}]
-        resultlist, _ = model.predict(reformatted_folder)
+        reformatted_folder = [{'vision': folder}]
+        out_behavior_npys = compute_behavior(BEHAVIORS, behavior_in_folder_name, object_in_folder_name)
+        resultlist, _ = model.predict(reformatted_folder, out_behavior_npys)
 
         # save images within the trial
         trial_path = folder[folder.find("vision"):]
@@ -141,10 +146,13 @@ if __name__ == "__main__":
     opt.baseline = False
     opt.sequence_length = 20
     
-    if opt.predict == True:
+    if opt.predict == True and opt.evaluate == False:
         predict(opt)
 
-    if opt.evaluate == True:
+    elif opt.evaluate == True and opt.predict == False:
         evaluate(opt, opt.debug)
+
+    else:
+        raise Exception("You must specify exactly one of --predict or --evaluate.")
     
     

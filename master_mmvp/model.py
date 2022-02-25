@@ -191,7 +191,7 @@ class Model():
         elif self.opt.pretrained_model:
             self.net.load_state_dict(torch.load(self.opt.pretrained_model, map_location=torch.device('cpu')))
 
-    def predict(self, files):
+    def predict(self, files, out_behavior_npys = None):
         with torch.no_grad():
             
             datas = []
@@ -209,8 +209,10 @@ class Model():
                 out_haptic_npys, bins = generate_npy_haptic(haptic1, haptic2, n_frames, vision.split(os.sep)[-1], 20)
                 out_vibro_npys = generate_npy_vibro(vibro, n_frames, bins, vision.split(os.sep)[-1], 20)
 
-                out_behavior_npys = np.zeros(len(BEHAVIORS))
-                out_behavior_npys[BEHAVIORS.index(vision.split(os.sep)[-1])] = 1
+                if type(out_behavior_npys) == type(None):
+                    out_behavior_npys = np.zeros(len(BEHAVIORS))
+                    out_behavior_npys[BEHAVIORS.index(vision.split(os.sep)[-1])] = 1
+                    
                 out_behavior_npys = torch.from_numpy(out_behavior_npys).float().to(self.device)
 
                 for out_vision_npy, out_haptic_npy, out_audio_npy, out_vibro_npy in \

@@ -426,10 +426,7 @@ def process(visions, chosen_behavior, OUT_DIR):
         if out_audio_npys is None or out_haptic_npys is None or out_vibro_npys is None:
             fail_count += 1
             continue
-        out_behavior_npys = np.zeros(len(CHOOSEN_BEHAVIORS))
-        out_behavior_npys[CHOOSEN_BEHAVIORS.index(behavior)] = 1
-        descriptors = switch_words_on(selected_object, DESCRIPTOR_CODES, DESCRIPTORS_BY_OBJECT)
-        out_behavior_npys = np.hstack([out_behavior_npys, descriptors])
+        out_behavior_npys = compute_behavior(CHOOSEN_BEHAVIORS, behavior, selected_object)
 
         for i, (out_vision_npy, out_haptic_npy, out_audio_npy, out_vibro_npy) in enumerate(zip(
                 out_vision_npys, out_haptic_npys, out_audio_npys, out_vibro_npys)):
@@ -444,6 +441,11 @@ def process(visions, chosen_behavior, OUT_DIR):
             np.save(out_sample_dir + '_' + str(i), ret)
     print("fail: ", fail_count)
 
+def compute_behavior(CHOSEN_BEHAVIORS, behavior, object):
+    out_behavior_npys = np.zeros(len(CHOSEN_BEHAVIORS))
+    out_behavior_npys[CHOSEN_BEHAVIORS.index(behavior)] = 1
+    descriptors = switch_words_on(object, DESCRIPTOR_CODES, DESCRIPTORS_BY_OBJECT)
+    out_behavior_npys = np.hstack([out_behavior_npys, descriptors])
 
 def run(chosen_behavior, data_dir, out_dir):
     print("start making data")
