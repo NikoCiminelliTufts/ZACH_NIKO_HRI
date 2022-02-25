@@ -50,7 +50,7 @@ def predict(opt):
         if opt.use_descriptors == True:
             out_behavior_npys = compute_behavior(BEHAVIORS, behavior_in_folder_name, object_in_folder_name)
         else:
-            output_behavior_npys = None
+            out_behavior_npys = None
         resultlist, _ = model.predict(reformatted_folder, out_behavior_npys)
 
         # save images within the trial
