@@ -446,6 +446,7 @@ def compute_behavior(CHOSEN_BEHAVIORS, behavior, object):
     out_behavior_npys[CHOSEN_BEHAVIORS.index(behavior)] = 1
     descriptors = switch_words_on(object, DESCRIPTOR_CODES, DESCRIPTORS_BY_OBJECT)
     out_behavior_npys = np.hstack([out_behavior_npys, descriptors])
+    return out_behavior_npys
 
 def run(chosen_behavior, data_dir, out_dir):
     print("start making data")
