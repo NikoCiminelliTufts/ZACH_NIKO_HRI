@@ -88,14 +88,31 @@ def evaluate(opt, debug=False):
     # extract data
     all_scores = []
     for folder_i in range(len(predict_folders)):
-        relative_folder = predict_folders[folder_i].split(os.sep)
+        # determine which folder to operate on next and set paths
+        relative_folder = predict_folders[folder_i].split(os.sep)[-5:]
         if type(opt.behavior) != type(None) and relative_folder[-1] not in opt.behavior[0]:
             print("skipping " + relative_folder[-1])
             continue
-        raw_folder = os.path.join(opt.vis_raw_input_dir, *relative_folder[-5:])
+        raw_folder = os.path.join(opt.vis_raw_input_dir, *relative_folder)
         predict_folder = predict_folders[folder_i]
-        print(relative_folder)
+        print(predict_folder)
+
+        # skip folder if not included in desired output
+        include = False
+        data_filename = "_".join(relative_folder[1:])
+        print(data_filename)
+        train_path = os.path.join(opt.data_dir,"train",data_filename + "*")
+        test_path = os.path.join(opt.data_dir,"test",data_filename + "*")
         
+        if opt.train and len(glob.glob(train_path)) > 0:
+            include = True
+        if opt.test and len(glob.glob(test_path)) > 0:
+            include = True
+        if include == False:
+            print("skipping")
+            continue
+        
+        # load images making sure ordering is consistent
         raw_images = glob.glob(os.path.join(raw_folder,"*.jpg"))
         raw_images.sort(key=namesort)
         predict_images = glob.glob(os.path.join(predict_folder,"*.png"))
@@ -139,6 +156,8 @@ if __name__ == "__main__":
     #     --pretrained_model [path to the model to predict with]
     # if doing evaluation, also requires
     #     --evaluate
+    # if the input data has descriptors, must prepare raw data with descriptors using
+    #     --use_descriptors
     opt = Options()
     opt.parser.add_argument('--vis_raw_input_dir', type=str, default="", help='directory with raw data to visualize output')
     opt.parser.add_argument('--predict', action="store_true", help="use this if you want to generate predicted images")
@@ -146,6 +165,8 @@ if __name__ == "__main__":
     opt.parser.add_argument('--behavior', nargs="+", action="append", default=None, help="")
     opt.parser.add_argument('--debug', action="store_true", help="")
     opt.parser.add_argument('--use_descriptors', action="store_true", help="")
+    opt.parser.add_argument('--train', action="store_true", help="Include training data in evaluation.")
+    opt.parser.add_argument('--test', action="store_true", help="Include test data in evaluation.")
     opt = opt.parse()
     opt.baseline = False
     opt.sequence_length = 20
@@ -154,6 +175,8 @@ if __name__ == "__main__":
         predict(opt)
 
     elif opt.evaluate == True and opt.predict == False:
+        if not opt.train and not opt.test:
+            raise Exception("You must specify either train, test, or both.")
         evaluate(opt, opt.debug)
 
     else:
