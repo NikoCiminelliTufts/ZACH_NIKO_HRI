@@ -50,7 +50,7 @@ OBJECTS = [
     'smallstuffedanimal_moose',
     'weight_5', 'bottle_green', 'cup_paper_green', 'metal_thermos', 'smallstuffedanimal_otter', 'bottle_red',
     'cup_yellow', 'timber_pentagon', 'bottle_sobe', 'egg_cardboard', 'noodle_1', 'timber_rectangle', 'can_arizona',
-    'egg_plastic_wrap', 'noodle_2', 'timber_semicircle', 'no_object'
+    'egg_plastic_wrap', 'noodle_2', 'timber_semicircle'
 ]
 
 SORTED_OBJECTS = sorted(OBJECTS)
@@ -121,7 +121,6 @@ DESCRIPTORS_BY_OBJECT = {
     "noodle_3":["pink","foam","soft","deformable","toy","light"],
     "noodle_4":["pink","foam","soft","deformable","toy","tall","light"],
     "noodle_5":["pink","foam","soft","deformable","toy","tall","light","big"],
-    "no_object":[],
     "pasta_cremette":["green","multicolored","small","pasta","box","paper","container","full","closed","deformable","rectangular"],
     "pasta_macaroni":["blue","multicolored","pasta","box","paper","container","full","closed","deformable","rectangular"],
     "pasta_penne":["yellow","multicolored","pasta","box","paper","container","full","closed","deformable","large","rectangular"],
@@ -322,34 +321,30 @@ def generate_npy_vibro(path, n_frames, bins, behavior, sequence_length):
     return ret
 
 
-def split(strategy):
-    """
-    :param strategy: object | category | trial
-    :return: train -> list
-             test -> list
-    """
-    train_list = []
-    test_list = []
-    if strategy == 'object':
-        for i in range(len(SORTED_OBJECTS) // 5):
-            random_number = np.random.randint(low=0, high=5)
-            np.random.shuffle(SORTED_OBJECTS[5 * i:5 * i + 5])
-            shuffled_category = SORTED_OBJECTS[5 * i:5 * i + 5]
-            for item, object in enumerate(shuffled_category):
-                if item == random_number:
-                    test_list.append(object)
-                else:
-                    train_list.append(object)
-    elif strategy == 'category':
-        random.shuffle(CATEGORIES)
-        train_list, test_list = CATEGORIES[:16], CATEGORIES[16:]
+# splits words on objects with balanced categories to prepare for
+# 5-fold cross validation
+# assumes objects are in groupings/categories of exactly 5 with unique prefixes
+def split():
+    # test assumptions
+    if len(SORTED_OBJECTS) != 100:
+        raise Exception("split is intended to work for exactly 100 objects")
 
-    elif strategy == 'trial':
-        random.shuffle(TRIALS)
-        train_list, test_list = TRIALS[:4], TRIALS[4:]
-        train_list += ['exec_6', 'exec_7', 'exec_8', 'exec_9', 'exec_10']
-    return train_list, test_list
+    # semi-randomly split data
+    splits = [set([]),set([]),set([]),set([]),set([])]
+    # for each of 20 categories of objects
+    for category_i in range(len(SORTED_OBJECTS)//5):
+        low_ind = 5*category_i
+        random_list = np.random.permutation(5)
 
+        # for each of the 5 objects in that category
+        for object_i in range(5):
+            ind = low_ind + random_list[object_i]
+            if SORTED_OBJECTS[ind][0] != SORTED_OBJECTS[low_ind][0]:
+                raise Exception("each grouping must have exactly 5 objects with identical prefix")
+            else:
+                splits[object_i].add(SORTED_OBJECTS[ind])
+
+    return splits
 
 # create vector encoding descriptors of an object
 def switch_words_on(object, descriptor_codes, descriptors_by_object):
@@ -360,86 +355,68 @@ def switch_words_on(object, descriptor_codes, descriptors_by_object):
     return encoded_output
 
 
-def process(visions, chosen_behavior, OUT_DIR):
-    CHOOSEN_BEHAVIORS = BEHAVIORS
-    if chosen_behavior in CHOOSEN_BEHAVIORS:
-        CHOOSEN_BEHAVIORS = [chosen_behavior]
-    train_subdir = 'train'
-    test_subdir = 'test'
-    # vis_subdir = 'vis'
-    if not os.path.exists(os.path.join(OUT_DIR, train_subdir)):
-        os.makedirs(os.path.join(OUT_DIR, train_subdir))
+def process(visions, chosen_behaviors, OUT_DIR):
 
-    if not os.path.exists(os.path.join(OUT_DIR, test_subdir)):
-        os.makedirs(os.path.join(OUT_DIR, test_subdir))
+    for split_num in range(5):
+        train_subdir = 'train'
+        test_subdir = 'test'
+        # vis_subdir = 'vis'
+        if not os.path.exists(os.path.join(OUT_DIR, str(split_num), train_subdir)):
+            os.makedirs(os.path.join(OUT_DIR, str(split_num), train_subdir))
 
-    # added for VIS splits
-    # if not os.path.exists(os.path.join(VIS_DIR, chosen_behavior)):
-    #     os.makedirs(os.path.join(VIS_DIR, chosen_behavior))
+        if not os.path.exists(os.path.join(OUT_DIR, str(split_num), test_subdir)):
+            os.makedirs(os.path.join(OUT_DIR, str(split_num), test_subdir))
 
-    train_list, test_list = split(strategy=STRATEGY)
+        splits = split()
 
-    # train_test_split_dict = {
-    #     'train': train_list,
-    #     'test': test_list
-    # }
-    # with open(os.path.join(VIS_DIR, chosen_behavior, "train_test_split"), 'wt') as split_file:
-    #     for k, v in train_test_split_dict.items():
-    #         split_file.write('%s: %s\n' % (str(k), str(v)))
+        fail_count = 0
+        for vision in visions:
+            print("processing " + vision)
 
-    split_base = train_list + test_list
-    cutting = len(train_list)
+            # The path is object/trial/exec/behavior/file_name (visions does not include file names)
+            vision_components = vision.split(os.sep)
+            object_name = vision_components[-4]
+            behavior_name = vision_components[-1]
 
-    fail_count = 0
-    for vision in visions:
-        save = False
-        behavior = ''
-        for _bh in CHOOSEN_BEHAVIORS:
-            if _bh in vision.split('/'):# splitting the path in order to allow us to loop over to find the behavior
-                selected_object = vision.split('/')[-4]# The path is object/trial/exec/behavior/file_name (visions does not include file names)
-                behavior = _bh
-                save = True
-                break
-        if not save:
-            continue
-        subdir = ''
-        for ct in split_base[:cutting]:
-            if ct in vision:
-                subdir = train_subdir
-        for ct in split_base[cutting:]:
-            if ct in vision:
+            # validate behavior
+            if behavior_name not in BEHAVIORS:
+                continue      
+
+            # validate object and split
+            if object_name not in OBJECTS:
+                continue
+            if object_name in splits[split_num]:
                 subdir = test_subdir
-        if not subdir:
-            continue
-        out_sample_dir = os.path.join(OUT_DIR, subdir, '_'.join(vision.split('/')[-4:]))
+            else:
+                subdir = train_subdir
+            out_sample_dir = os.path.join(OUT_DIR, str(split_num), subdir, '_'.join(vision.split(os.sep)[-4:]))
 
-        haptic1 = os.path.join(re.sub(r'vision_data_part[1-4]', 'rc_data', vision), 'proprioception', 'ttrq0.txt')
-        haptic2 = os.path.join(re.sub(r'vision_data_part[1-4]', 'rc_data', vision), 'proprioception', 'cpos0.txt')
-        audio = os.path.join(re.sub(r'vision_data_part[1-4]', 'rc_data', vision), 'hearing', '*.wav')
-        vibro = os.path.join(re.sub(r'vision_data_part[1-4]', 'rc_data', vision), 'vibro', '*.tsv')
+            haptic1 = os.path.join(re.sub(r'vision_data_part[1-4]', 'rc_data', vision), 'proprioception', 'ttrq0.txt')
+            haptic2 = os.path.join(re.sub(r'vision_data_part[1-4]', 'rc_data', vision), 'proprioception', 'cpos0.txt')
+            audio = os.path.join(re.sub(r'vision_data_part[1-4]', 'rc_data', vision), 'hearing', '*.wav')
+            vibro = os.path.join(re.sub(r'vision_data_part[1-4]', 'rc_data', vision), 'vibro', '*.tsv')
 
-        out_vision_npys, n_frames = generate_npy_vision(vision, behavior, SEQUENCE_LENGTH)
-        out_audio_npys = generate_npy_audio(audio, n_frames, behavior, SEQUENCE_LENGTH)
-        out_haptic_npys, bins = generate_npy_haptic(haptic1, haptic2, n_frames, behavior, SEQUENCE_LENGTH)
-        out_vibro_npys = generate_npy_vibro(vibro, n_frames, bins, behavior, SEQUENCE_LENGTH)
+            out_vision_npys, n_frames = generate_npy_vision(vision, behavior_name, SEQUENCE_LENGTH)
+            out_audio_npys = generate_npy_audio(audio, n_frames, behavior_name, SEQUENCE_LENGTH)
+            out_haptic_npys, bins = generate_npy_haptic(haptic1, haptic2, n_frames, behavior_name, SEQUENCE_LENGTH)
+            out_vibro_npys = generate_npy_vibro(vibro, n_frames, bins, behavior_name, SEQUENCE_LENGTH)
 
-        if out_audio_npys is None or out_haptic_npys is None or out_vibro_npys is None:
-            fail_count += 1
-            continue
-        out_behavior_npys = compute_behavior(CHOOSEN_BEHAVIORS, behavior, selected_object)
+            if out_audio_npys is None or out_haptic_npys is None or out_vibro_npys is None:
+                fail_count += 1
+                continue
+            out_behavior_npys = compute_behavior(chosen_behaviors, behavior_name, object_name)
 
-        for i, (out_vision_npy, out_haptic_npy, out_audio_npy, out_vibro_npy) in enumerate(zip(
-                out_vision_npys, out_haptic_npys, out_audio_npys, out_vibro_npys)):
-            print('i', i)
-            ret = {
-                'behavior': out_behavior_npys,
-                'vision': out_vision_npy,
-                'haptic': out_haptic_npy,
-                'audio': out_audio_npy,
-                'vibro': out_vibro_npy
-            }
-            np.save(out_sample_dir + '_' + str(i), ret)
-    print("fail: ", fail_count)
+            for i, (out_vision_npy, out_haptic_npy, out_audio_npy, out_vibro_npy) in enumerate(zip(
+                    out_vision_npys, out_haptic_npys, out_audio_npys, out_vibro_npys)):
+                ret = {
+                    'behavior': out_behavior_npys,
+                    'vision': out_vision_npy,
+                    'haptic': out_haptic_npy,
+                    'audio': out_audio_npy,
+                    'vibro': out_vibro_npy
+                }
+                np.save(out_sample_dir + '_' + str(i), ret)
+        print("fail: ", fail_count)
 
 def compute_behavior(CHOSEN_BEHAVIORS, behavior, object):
     out_behavior_npys = np.zeros(len(CHOSEN_BEHAVIORS))
@@ -458,12 +435,21 @@ def run(chosen_behavior, data_dir, out_dir):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--behavior', default='None', help='which behavior?')
+    parser.add_argument('--behavior', nargs="+", action="append", default=[], help='which behavior?')
     parser.add_argument('--data_dir', default='/media/ramtin/ramtin/data/CY101Dataset', help='source data directory') # '../../data/CY101'
     parser.add_argument('--out_dir', default='/media/ramtin/ramtin/data/CY101NPY', help='target data directory') # '../../data/CY101NPY'
     args = parser.parse_args()
+
+    # validate behavior argument
+    if len(args.behavior) == 0:
+        args.behavior = BEHAVIORS
+    else:
+        for behavior in args.behavior:
+            if behavior not in BEHAVIORS:
+                raise Exception("requested unknown behavior: " + behavior)
     print("behavior: ", args.behavior)
 
+    # initiate data processing
     if not os.path.exists(args.out_dir):
         os.makedirs(args.out_dir)
     run(chosen_behavior=args.behavior, data_dir=args.data_dir, out_dir=args.out_dir)
