@@ -1,5 +1,4 @@
 import os
-from sqlalchemy import desc
 import torch
 from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset
