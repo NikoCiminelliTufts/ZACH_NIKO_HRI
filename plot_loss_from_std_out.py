@@ -17,4 +17,7 @@ with open(file, "r") as f:
 
             loss.append(float(line[loss_start_ind:loss_end_ind]))
 
-            print(loss[-1])
+print("collected {} losses".format(len(loss)))
+
+plt.plot(loss)
+plt.savefig(file + ".png", format="png")
