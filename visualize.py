@@ -7,9 +7,14 @@ from master_mmvp.data.make_data import BEHAVIORS
 import master_mmvp.metrics as metrics
 import glob
 import os
+import sys
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
+
+## check version
+if sys.version_info[0] < 3:
+    raise Exception("You must run visualize.py with python 3. You are currently running " + sys.version)
 
 ## predict takes an Options object from options.py
 # and computes and stores a series of predicted images for all input data
@@ -104,9 +109,9 @@ def evaluate(opt, debug=False):
         train_path = os.path.join(opt.data_dir,"train",data_filename + "*")
         test_path = os.path.join(opt.data_dir,"test",data_filename + "*")
         
-        if opt.train and len(glob.glob(train_path)) > 0:
+        if opt.use_train and len(glob.glob(train_path)) > 0:
             include = True
-        if opt.test and len(glob.glob(test_path)) > 0:
+        if opt.use_test and len(glob.glob(test_path)) > 0:
             include = True
         if include == False:
             print("skipping")
@@ -164,9 +169,8 @@ if __name__ == "__main__":
     opt.parser.add_argument('--evaluate', action="store_true", help="use this if you want to generate plots evaluating predictions")
     opt.parser.add_argument('--behavior', nargs="+", action="append", default=None, help="")
     opt.parser.add_argument('--debug', action="store_true", help="")
-    opt.parser.add_argument('--use_descriptors', action="store_true", help="")
-    opt.parser.add_argument('--train', action="store_true", help="Include training data in evaluation.")
-    opt.parser.add_argument('--test', action="store_true", help="Include test data in evaluation.")
+    opt.parser.add_argument('--use_train', action="store_true", help="Include training data in evaluation.")
+    opt.parser.add_argument('--use_test', action="store_true", help="Include test data in evaluation.")
     opt = opt.parse()
     opt.baseline = False
     opt.sequence_length = 20
@@ -175,8 +179,8 @@ if __name__ == "__main__":
         predict(opt)
 
     elif opt.evaluate == True and opt.predict == False:
-        if not opt.train and not opt.test:
-            raise Exception("You must specify either train, test, or both.")
+        if not opt.use_train and not opt.use_test:
+            raise Exception("You must specify either --use_train, --use_test, or both.")
         evaluate(opt, opt.debug)
 
     else:
