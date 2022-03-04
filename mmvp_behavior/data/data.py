@@ -73,13 +73,14 @@ class PushDataset(Dataset):
 
 
 class CY101Dataset(Dataset):
-    def __init__(self, root, image_transform=None, haptic_transform=None, audio_transform=None, vibro_transform=None, loader=npy_loader, device='cpu'):
+    def __init__(self, root, image_transform=None, haptic_transform=None, audio_transform=None, behavior_transform=None, vibro_transform=None, loader=npy_loader, device='cpu'):
         if not os.path.exists(root):
             raise FileExistsError('{0} does not exists!'.format(root))
 
         self.image_transform = lambda vision: torch.cat([image_transform(single_image).unsqueeze(0) for single_image in vision.unbind(0)], dim=0)
         self.haptic_transform = lambda haptic: torch.cat([haptic_transform(single_haptic).unsqueeze(0) for single_haptic in haptic.unbind(0)], dim=0)
         self.audio_transform = lambda audio: torch.cat([audio_transform(single_audio).unsqueeze(0) for single_audio in audio.unbind(0)], dim=0)
+        #self.behavior_transform = lambda behavior: torch.cat([behavior_transform()])
         self.vibro_transform = lambda vibro: torch.cat([vibro_transform(single_vibro).unsqueeze(0) for single_vibro in vibro.unbind(0)], dim=0)
 
         self.samples = make_dataset(root)
@@ -193,29 +194,6 @@ def build_dataloader_CY101(opt):
             transforms.Lambda(addnoise_hp)
     ])
 
-    behaviors_only = transforms.Compose([
-        transforms.Lambda(lambda x: x[:opt.behavior_layer])
-    ])
-    descriptors_only = transforms.Compose([
-        transforms.Lambda(lambda x: x[opt.behavior_layer:])
-    ])
-    both = transforms.Compose([
-        transforms.Lambda(lambda x: x)
-    ])
-    no_behavior = transforms.Compose([
-        transforms.Lambda(lambda x: np.zeros(len(x)))
-    ])
-
-
-    if opt.use_behavior and not opt.use_descriptor:
-        behavior_transform = behaviors_only
-    elif opt.use_descriptor and not opt.use_behavior:
-        behavior_transform = descriptors_only
-    elif opt.use_behavior and opt.use_descriptor:
-        behavior_transform = both
-    else:
-        behavior_transform = no_behavior
-
     vibro_transform = transforms.Compose([
         transforms.Lambda(Standardizer(mean=torch.Tensor(VIBRO_MEAN),
                                         std=torch.Tensor(VIBRO_STD))),
@@ -226,7 +204,7 @@ def build_dataloader_CY101(opt):
         image_transform=image_transform,
         audio_transform=audio_transform,
         haptic_transform=haptic_transform,
-        behavior_transform=behavior_transform,
+        #behavior_transform=behavior_transform,
         vibro_transform=vibro_transform,
         loader=npy_loader,# exit(1)
         device=opt.device
@@ -237,7 +215,7 @@ def build_dataloader_CY101(opt):
         image_transform=image_transform,
         audio_transform=audio_transform,
         haptic_transform=haptic_transform,
-        behavior_transform=behavior_transform,
+        #behavior_transform=behavior_transform,
         vibro_transform=vibro_transform,
         loader=npy_loader,
         device=opt.device
