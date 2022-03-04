@@ -29,11 +29,13 @@ class Options():
 
         self.parser.add_argument('--use_haptic', action='store_true', help='Whether or not to give the haptic to the model')
         self.parser.add_argument('--use_behavior', action='store_true', help='Whether or not to give the behavior to the model')
+        self.parser.add_argument('--use_descriptor', action='store_true', help='Whether or not to give the descriptors to the model')
         self.parser.add_argument('--use_audio', action='store_true', help='Whether or not to give the audio to the model')
         self.parser.add_argument('--use_vibro', action='store_true', help='Whether or not to give the vibro to the model')
 
         self.parser.add_argument('--haptic_layer', type=int, default=16, help='HAPTIC_LAYER.')
-        self.parser.add_argument('--behavior_layer', type=int, default=77, help='number of chosen behaviors.')
+        self.parser.add_argument('--behavior_layer', type=int, default=9, help='number of chosen behaviors.')
+        self.parser.add_argument('--descriptor_layer', type=int, default=68, help='number of descriptors.')
         self.parser.add_argument('--audio_layer', type=int, default=16, help='AUDIO_LAYER.')
         self.parser.add_argument('--vibro_layer', type=int, default=16, help='VIBRO_LAYER.')
         self.parser.add_argument('--aux', action='store_true', help='employ auxiliary tasks during training' )

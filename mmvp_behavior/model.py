@@ -28,7 +28,7 @@ class Model:
 
         self.net = network(self.opt, self.opt.channels, self.opt.height, self.opt.width, -1, self.opt.schedsamp_k,
                        self.opt.num_masks, self.opt.model=='STP', self.opt.model=='CDNA', self.opt.model=='DNA', self.opt.context_frames,
-                       self.opt.dna_kern_size, self.opt.haptic_layer, self.opt.behavior_layer, self.opt.audio_layer, self.opt.vibro_layer)
+                       self.opt.dna_kern_size, self.opt.haptic_layer, self.opt.behavior_layer, self.opt.descriptor_layer, self.opt.audio_layer, self.opt.vibro_layer)
 
         self.net.to(self.device)
         self.mse_loss = nn.MSELoss()

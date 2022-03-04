@@ -23,7 +23,8 @@ class network(nn.Module):
                  context_frames=2,
                  DNA_KERN_SIZE = 5,
                  HAPTIC_LAYER = 16,
-                 BEHAVIOR_LAYER = 77,
+                 BEHAVIOR_LAYER = 9,
+                 DESCRIPTOR_LAYER = 68,
                  AUDIO_LAYER = 16,
                  VIBRO_LAYER = 16
                  ):
@@ -51,6 +52,7 @@ class network(nn.Module):
         self.AUDIO_LAYER = AUDIO_LAYER
         self.HAPTIC_LAYER = HAPTIC_LAYER
         self.BEHAVIOR_LAYER = BEHAVIOR_LAYER
+        self.DESCRIPTOR_LAYER = DESCRIPTOR_LAYER
         self.VIBRO_LAYER = VIBRO_LAYER
         # N * 3 * H * W -> N * 32 * H/2 * W/2
         self.enc0 = nn.Conv2d(in_channels=channels, out_channels=self.lstm_size[0], kernel_size=5, stride=2, padding=2)
@@ -82,7 +84,7 @@ class network(nn.Module):
         self.build_modalities_block()
 
         # N * (10+64) * H/8 * W/8 -> N * 64 * H/8 * W/8
-        self.enc3 = nn.Conv2d(in_channels=self.lstm_size[3]+self.VIBRO_LAYER+self.HAPTIC_LAYER+self.AUDIO_LAYER+self.BEHAVIOR_LAYER,
+        self.enc3 = nn.Conv2d(in_channels=self.lstm_size[3]+self.VIBRO_LAYER+self.HAPTIC_LAYER+self.AUDIO_LAYER+self.BEHAVIOR_LAYER+self.DESCRIPTOR_LAYER,
                               out_channels=self.lstm_size[3], kernel_size=1, stride=1)
 
         # N * 64 * H/8 * W/8 -> N * 128 * H/8 * W/8
