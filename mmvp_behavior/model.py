@@ -42,9 +42,9 @@ class Model:
         for iter_, (images, haptics, audios, behaviors, vibros) in enumerate(self.dataloader['train']):
             self.net.zero_grad()
             if not self.opt.use_behavior:
-                behaviors = behaviors[:self.opt.behavior_layer] = 0
+                behaviors[:self.opt.behavior_layer] = 0
             if not self.opt.use_descriptor:
-                behaviors = behaviors[self.opt.behavior_layer:] = 0
+                behaviors[self.opt.behavior_layer:] = 0
             if not self.opt.use_haptic:
                 haptics = torch.zeros_like(haptics).to(self.device)
             if not self.opt.use_audio:
