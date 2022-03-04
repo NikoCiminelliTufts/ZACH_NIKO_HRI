@@ -6,10 +6,10 @@ file = sys.argv[1]
 
 loss = []
 with open(file, "r") as f:
-    for line in f.readline():
-        if line[:10] == "training_e":
-            
-            prefix = "training_loss: "
+    for line in f.readlines():
+        if line[:10] == "training e":
+                
+            prefix = "total_loss: "
             loss_start_ind = line.index(prefix) + len(prefix)
             
             suffix = "recon_loss:"
