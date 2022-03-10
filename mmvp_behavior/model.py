@@ -5,7 +5,7 @@ import numpy as np
 from networks import network
 from data import build_dataloader_CY101
 from torch.nn import functional as F
-from torchgeometry.losses import ssim
+from skimage.metrics import structural_similarity
 from metrics import mse_to_psnr, peak_signal_to_noise_ratio, calc_ssim
 
 
@@ -32,7 +32,7 @@ class Model:
                        self.opt.dna_kern_size, self.opt.haptic_layer, self.opt.behavior_layer, self.opt.descriptor_layer, self.opt.audio_layer, self.opt.vibro_layer)
 
         self.net.to(self.device)
-        self.mse_loss = ssim()
+        self.mse_loss = nn.MSELoss()
 
         if self.opt.pretrained_model:
             self.load_weight()
@@ -74,7 +74,7 @@ class Model:
             '''
             for i, (image, gen_image) in enumerate(
                     zip(images[self.opt.context_frames:], gen_images[self.opt.context_frames-1:])):
-                recon_loss += self.mse_loss(image, gen_image)
+                recon_loss += structural_similarity(image, gen_image, full=True)
                 psnr_i = peak_signal_to_noise_ratio(image, gen_image)
                 psnr += psnr_i
 
