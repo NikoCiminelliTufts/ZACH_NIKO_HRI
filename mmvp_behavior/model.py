@@ -120,7 +120,9 @@ class Model:
                 if not self.opt.use_haptic:
                     haptics = torch.zeros_like(haptics).to(self.device)
                 if not self.opt.use_behavior:
-                    behaviors = torch.zeros_like(behaviors).to(self.device)
+                    behaviors[:self.opt.behavior_layer] = 0
+                if not self.opt.use_descriptor:
+                    behaviors[self.opt.behavior_layer:] = 0
                 if not self.opt.use_audio:
                     audios = torch.zeros_like(audios).to(self.device)
                 if not self.opt.use_vibro:
