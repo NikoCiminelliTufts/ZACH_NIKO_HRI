@@ -5,6 +5,7 @@ import numpy as np
 from networks import network
 from data import build_dataloader_CY101
 from torch.nn import functional as F
+from torchgeometry.losses import ssim
 from metrics import mse_to_psnr, peak_signal_to_noise_ratio, calc_ssim
 
 
@@ -31,7 +32,7 @@ class Model:
                        self.opt.dna_kern_size, self.opt.haptic_layer, self.opt.behavior_layer, self.opt.descriptor_layer, self.opt.audio_layer, self.opt.vibro_layer)
 
         self.net.to(self.device)
-        self.mse_loss = nn.MSELoss()
+        self.mse_loss = ssim()
 
         if self.opt.pretrained_model:
             self.load_weight()
