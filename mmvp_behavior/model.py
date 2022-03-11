@@ -7,6 +7,7 @@ from data import build_dataloader_CY101
 from torch.nn import functional as F
 from skimage.metrics import structural_similarity
 from metrics import mse_to_psnr, peak_signal_to_noise_ratio, calc_ssim
+from torch.autograd import Variable
 
 
 class Model:
@@ -61,7 +62,7 @@ class Model:
 
             gen_images, gen_haptics, gen_audios, gen_vibros = self.net(images, haptics, audios, behaviors, vibros)
 
-            recon_loss, haptic_loss, audio_loss, vibro_loss = 0.0, 0.0, 0.0, 0.0
+            recon_loss, haptic_loss, audio_loss, vibro_loss = [0.0]*4
             loss, psnr = 0.0, 0.0
             '''
                 Line 80-85 
@@ -82,7 +83,7 @@ class Model:
                     one_gen_image = gen_image.permute([2, 3, 1, 0])[:,:,:,ii].squeeze()
                     one_gen_image = (one_gen_image.cpu().detach().numpy() * 255).astype(np.uint8)
                     temp, _ = structural_similarity(one_image, one_gen_image, full=True, multichannel=True)
-                    recon_loss += temp
+                    recon_loss += torch.tensor(temp, requires_grad=True)
                 psnr_i = peak_signal_to_noise_ratio(image, gen_image)
                 psnr += psnr_i
 
