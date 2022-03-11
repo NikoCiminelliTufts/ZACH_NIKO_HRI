@@ -74,7 +74,15 @@ class Model:
             '''
             for i, (image, gen_image) in enumerate(
                     zip(images[self.opt.context_frames:], gen_images[self.opt.context_frames-1:])):
-                recon_loss += structural_similarity(image, gen_image, full=True, multichannel=True)
+                # loop through batches of batches of images
+                for ii in range(self.opt.batch_size):
+                    # select one image from one batch
+                    one_image = image.permute([2, 3, 1, 0])[:,:,:,ii].squeeze()
+                    one_image = (one_image.cpu().detach().numpy() * 255).astype(np.uint8)
+                    one_gen_image = gen_image.permute([2, 3, 1, 0])[:,:,:,ii].squeeze()
+                    one_gen_image = (one_gen_image.cpu().detach().numpy() * 255).astype(np.uint8)
+                    temp, _ = structural_similarity(one_image, one_gen_image, full=True, multichannel=True)
+                    recon_loss += temp
                 psnr_i = peak_signal_to_noise_ratio(image, gen_image)
                 psnr += psnr_i
 
