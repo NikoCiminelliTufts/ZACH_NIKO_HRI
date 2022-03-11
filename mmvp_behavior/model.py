@@ -76,7 +76,7 @@ class Model:
             for i, (image, gen_image) in enumerate(
                     zip(images[self.opt.context_frames:], gen_images[self.opt.context_frames-1:])):
                 # loop through batches of batches of images
-                for ii in range(self.opt.batch_size):
+                for ii in range(image.size(dim=0)):
                     # select one image from one batch
                     one_image = image.permute([2, 3, 1, 0])[:,:,:,ii].squeeze()
                     one_image = (one_image.cpu().detach().numpy() * 255).astype(np.uint8)
