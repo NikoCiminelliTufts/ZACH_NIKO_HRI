@@ -74,7 +74,7 @@ class Model:
             '''
             for i, (image, gen_image) in enumerate(
                     zip(images[self.opt.context_frames:], gen_images[self.opt.context_frames-1:])):
-                recon_loss += structural_similarity(image, gen_image, full=True)
+                recon_loss += structural_similarity(image, gen_image, full=True, multichannel=True)
                 psnr_i = peak_signal_to_noise_ratio(image, gen_image)
                 psnr += psnr_i
 
