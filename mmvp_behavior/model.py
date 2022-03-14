@@ -2,12 +2,13 @@ import os
 import torch
 from torch import nn
 import numpy as np
+import re
 from networks import network
 from data import build_dataloader_CY101
 from torch.nn import functional as F
 from skimage.metrics import structural_similarity
 from metrics import mse_to_psnr, peak_signal_to_noise_ratio, calc_ssim
-from torch.autograd import Variable
+from .data import generate_npy_vibro,generate_npy_haptic,generate_npy_audio,generate_npy_vision, BEHAVIORS
 
 
 class Model:
@@ -120,7 +121,7 @@ class Model:
     def train(self):
         for epoch_i in range(0, self.opt.epochs):
             self.train_epoch(epoch_i)
-            self.evaluate(epoch_i)
+            self.evaluate(epoch_i, ssim=True)
             self.save_weight(epoch_i)
 
     def evaluate(self, epoch, keep_frame=False, keep_batch=False, ssim=False):
@@ -185,6 +186,68 @@ class Model:
         elif self.opt.pretrained_model:
             self.net.load_state_dict(torch.load(self.opt.pretrained_model, map_location=torch.device('cpu')))
 
+    def predict(self, files, out_behavior_npys = None):
+        with torch.no_grad():
+            
+            datas = []
+            ret = []
+            gt = []
+            for file in files:
+                vision = file['vision']
+                haptic1 = os.path.join(re.sub(r'vision_data_part[1-4]', 'rc_data', vision), 'proprioception', 'ttrq0.txt')
+                haptic2 = os.path.join(re.sub(r'vision_data_part[1-4]', 'rc_data', vision), 'proprioception', 'cpos0.txt')
+                audio = os.path.join(re.sub(r'vision_data_part[1-4]', 'rc_data', vision), 'hearing', '*.wav')
+                vibro = os.path.join(re.sub(r'vision_data_part[1-4]', 'rc_data', vision), 'vibro', '*.tsv')
+
+                out_vision_npys, n_frames = generate_npy_vision(vision, vision.split(os.sep)[-1], 20)
+                out_audio_npys = generate_npy_audio(audio, n_frames, vision.split(os.sep)[-1], 20)
+                out_haptic_npys, bins = generate_npy_haptic(haptic1, haptic2, n_frames, vision.split(os.sep)[-1], 20)
+                out_vibro_npys = generate_npy_vibro(vibro, n_frames, bins, vision.split(os.sep)[-1], 20)
+
+                if type(out_behavior_npys) == type(None):
+                    out_behavior_npys = np.zeros(len(BEHAVIORS))
+                    out_behavior_npys[BEHAVIORS.index(vision.split(os.sep)[-1])] = 1
+                    
+                out_behavior_npys = torch.from_numpy(out_behavior_npys).float().to(self.device)
+
+                for out_vision_npy, out_haptic_npy, out_audio_npy, out_vibro_npy in \
+                        zip(out_vision_npys, out_haptic_npys, out_audio_npys, out_vibro_npys):
+                    out_vision_npy = torch.from_numpy(out_vision_npy)
+                    out_vision_npy = self.dataloader['valid'].dataset.image_transform(out_vision_npy).to(self.device)
+
+                    out_haptic_npy = torch.from_numpy(out_haptic_npy).float()
+                    out_haptic_npy = self.dataloader['valid'].dataset.haptic_transform(out_haptic_npy).to(self.device)
+
+                    out_audio_npy = torch.from_numpy(out_audio_npy)
+                    out_audio_npy = self.dataloader['valid'].dataset.audio_transform(out_audio_npy).to(self.device)
+
+                    out_vibro_npy = torch.from_numpy(out_vibro_npy)
+                    out_vibro_npy = self.dataloader['valid'].dataset.vibro_transform(out_vibro_npy).to(self.device)
+
+                    datas.append([out_vision_npy, out_haptic_npy, out_audio_npy, out_behavior_npys, out_vibro_npy])
+
+            for iter_, (images, haptics, audios, behaviors, vibros) in enumerate(datas):
+                if not self.opt.use_haptic:
+                    haptics = torch.zeros_like(haptics).to(self.device)
+                if not self.opt.use_behavior:
+                    behaviors[:self.opt.behavior_layer] = 0
+                if not self.opt.use_descriptor:
+                    behaviors[self.opt.behavior_layer:] = 0
+                if not self.opt.use_audio:
+                    audios = torch.zeros_like(audios).to(self.device)
+                if not self.opt.use_vibro:
+                    vibros = torch.zeros_like(vibros).to(self.device)
+
+                behaviors = behaviors.unsqueeze(-1).unsqueeze(-1).unsqueeze(0)
+                images = images.unsqueeze(0).permute([1, 0, 2, 3, 4]).unbind(0)
+                haptics = haptics.unsqueeze(0).permute([1, 0, 2, 3, 4]).unbind(0)
+                audios = audios.unsqueeze(0).permute([1, 0, 2, 3, 4]).unbind(0)
+                vibros = vibros.unsqueeze(0).permute([1, 0, 2, 3, 4]).unbind(0)
+
+                gens = self.net(images, haptics, audios, behaviors, vibros, train=False)
+                gt.append((images, haptics, audios, vibros))
+                ret.append(gens)
+            return ret, gt
 
 if __name__ == '__main__':
     from options import Options
