@@ -3,19 +3,20 @@ import torch
 from torch import nn
 import numpy as np
 import re
-from networks.network import network
-from data import build_dataloader_CY101
+from .networks.network import network
 from torch.nn import functional as F
 from skimage.metrics import structural_similarity
 from metrics import mse_to_psnr, peak_signal_to_noise_ratio, calc_ssim
-from .data import generate_npy_vibro,generate_npy_haptic,generate_npy_audio,generate_npy_vision, BEHAVIORS
+from .data import build_dataloader_CY101, generate_npy_vibro,generate_npy_haptic, \
+    generate_npy_audio,generate_npy_vision, BEHAVIORS
 
 
 class Model:
     def __init__(self, opt):
         self.opt = opt
         self.device = self.opt.device
-        print("use haptic: ", opt.use_haptic, "    use behavior: ", opt.use_behavior, "    use audio: ", opt.use_audio, "    use vibro: ", opt.use_vibro)
+        print("use haptic: ", opt.use_haptic, "    use behavior: ", opt.use_behavior, \
+            "    use audio: ", opt.use_audio, "    use vibro: ", opt.use_vibro)
 
         train_dataloader, valid_dataloader = build_dataloader_CY101(opt)
         self.dataloader = {'train': train_dataloader, 'valid': valid_dataloader}
