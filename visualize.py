@@ -1,9 +1,9 @@
 # imports
 from mmvp_behavior.data.make_data import compute_behavior
 from mmvp_behavior.options import Options
-from master_mmvp.model import Model
-from master_mmvp.data.make_data import IMG_SIZE
-from master_mmvp.data.make_data import BEHAVIORS
+from mmvp_behavior.model import Model
+from mmvp_behavior.data.make_data import IMG_SIZE
+from mmvp_behavior.data.make_data import BEHAVIORS
 import master_mmvp.metrics as metrics
 import glob
 import os
@@ -30,23 +30,23 @@ def predict(opt):
     # find raw input files
     # looking for directory structure:
     # vision_data*/object name/trial num/exec num/behavior name
-    folder_glob = glob.glob(os.path.join(opt.vis_raw_input_dir, 'v*', '*', '*', '*', '*','*'))
+    folder_glob = glob.glob(os.path.join(opt.vis_raw_input_dir, 'v*', '*', '*', '*', '*'))
     if len(folder_glob) == 0:
         print("Error: vis_raw_input_dir not properly set")
         return
     for folder in folder_glob:
         
         # bypass unused behaviors
-        behavior_in_folder_name = folder.split(os.sep)[-2]
+        behavior_in_folder_name = folder.split(os.sep)[-1]
         if behavior_in_folder_name not in BEHAVIORS:
             continue
 
         # select object
-        object_in_folder_name = folder.split(os.sep)[-5]
+        object_in_folder_name = folder.split(os.sep)[-4]
 
         # bypass a bad exec
         folder = str(folder)
-        relative_folder = folder.split(os.sep)[-5:]
+        relative_folder = folder.split(os.sep)[-4:]
         if not os.access(os.path.join(opt.vis_raw_input_dir,'rc_data',*relative_folder),os.F_OK):
             continue
 
@@ -56,11 +56,11 @@ def predict(opt):
             out_behavior_npys = compute_behavior(BEHAVIORS, behavior_in_folder_name, object_in_folder_name)
         else:
             out_behavior_npys = None
-        resultlist, _ = model.predict(reformatted_folder, out_behavior_npys)
+        resultlist, _ = model.predict(reformatted_folder, out_behavior_npys)#need to add room for descriptors
 
         # save images within the trial
         trial_path = folder[folder.find("vision"):]
-        trial_path = os.join(trial_path.split(os.sep)[:-1])
+        #trial_path = os.join(trial_path.split(os.sep)[:-1])
         print(trial_path)
         i = 0
         for block in resultlist:
