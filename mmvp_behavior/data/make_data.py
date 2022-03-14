@@ -349,9 +349,10 @@ def split():
 # create vector encoding descriptors of an object
 def switch_words_on(object, descriptor_codes, descriptors_by_object):
     encoded_output = np.zeros(len(descriptor_codes))
-    for descriptor in descriptors_by_object[object]:
-        word_index = descriptor_codes[descriptor]
-        encoded_output[word_index] = 1
+    if type(object) != type(None):
+        for descriptor in descriptors_by_object[object]:
+            word_index = descriptor_codes[descriptor]
+            encoded_output[word_index] = 1
     return encoded_output
 
 
