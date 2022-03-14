@@ -3,7 +3,7 @@ import torch
 from torch import nn
 import numpy as np
 import re
-from networks import network
+from networks.network import network
 from data import build_dataloader_CY101
 from torch.nn import functional as F
 from skimage.metrics import structural_similarity
