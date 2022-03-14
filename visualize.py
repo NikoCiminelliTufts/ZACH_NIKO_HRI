@@ -52,7 +52,7 @@ def predict(opt):
 
         # predict images by trial
         reformatted_folder = [{'vision': folder}]
-        if opt.use_descriptors == True:
+        if opt.use_descriptor == True:
             out_behavior_npys = compute_behavior(BEHAVIORS, behavior_in_folder_name, object_in_folder_name)
         else:
             out_behavior_npys = None
@@ -162,7 +162,7 @@ if __name__ == "__main__":
     # if doing evaluation, also requires
     #     --evaluate
     # if the input data has descriptors, must prepare raw data with descriptors using
-    #     --use_descriptors
+    #     --use_descriptor
     opt = Options()
     opt.parser.add_argument('--vis_raw_input_dir', type=str, default="", help='directory with raw data to visualize output')
     opt.parser.add_argument('--predict', action="store_true", help="use this if you want to generate predicted images")
