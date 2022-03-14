@@ -30,23 +30,23 @@ def predict(opt):
     # find raw input files
     # looking for directory structure:
     # vision_data*/object name/trial num/exec num/behavior name
-    folder_glob = glob.glob(os.path.join(opt.vis_raw_input_dir, 'v*', '*', '*', '*', '*'))
+    folder_glob = glob.glob(os.path.join(opt.vis_raw_input_dir, 'v*', '*', '*', '*', '*','*'))
     if len(folder_glob) == 0:
         print("Error: vis_raw_input_dir not properly set")
         return
     for folder in folder_glob:
         
         # bypass unused behaviors
-        behavior_in_folder_name = folder.split(os.sep)[-1]
+        behavior_in_folder_name = folder.split(os.sep)[-2]
         if behavior_in_folder_name not in BEHAVIORS:
             continue
 
         # select object
-        object_in_folder_name = folder.split(os.sep)[-4]
+        object_in_folder_name = folder.split(os.sep)[-5]
 
         # bypass a bad exec
         folder = str(folder)
-        relative_folder = folder.split(os.sep)[-4:]
+        relative_folder = folder.split(os.sep)[-5:]
         if not os.access(os.path.join(opt.vis_raw_input_dir,'rc_data',*relative_folder),os.F_OK):
             continue
 
@@ -60,6 +60,7 @@ def predict(opt):
 
         # save images within the trial
         trial_path = folder[folder.find("vision"):]
+        trial_path = os.join(trial_path.split(os.sep)[:-1])
         print(trial_path)
         i = 0
         for block in resultlist:
