@@ -206,8 +206,8 @@ class Model:
                 out_vibro_npys = generate_npy_vibro(vibro, n_frames, bins, vision.split(os.sep)[-1], 20)
 
                 if type(out_behavior_npys) == type(None):
-                    out_behavior_npys = np.zeros(len(BEHAVIORS))
-                    out_behavior_npys[BEHAVIORS.index(vision.split(os.sep)[-1])] = 1
+                    out_behavior_npys = np.zeros(opt.behavior_layer + opt.descriptor_layer)
+                    #out_behavior_npys[BEHAVIORS.index(vision.split(os.sep)[-1])] = 1
                     
                 out_behavior_npys = torch.from_numpy(out_behavior_npys).float().to(self.device)
 
