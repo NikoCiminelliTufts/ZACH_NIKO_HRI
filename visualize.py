@@ -38,7 +38,9 @@ def predict(opt):
         
         # bypass unused behaviors
         behavior_in_folder_name = folder.split(os.sep)[-1]
-        if behavior_in_folder_name not in BEHAVIORS:
+        if type(opt.behavior) == type(None) and behavior_in_folder_name not in BEHAVIORS:
+            continue
+        elif behavior_in_folder_name not in opt.behavior or behavior_in_folder_name not in BEHAVIORS:
             continue
 
         # select object
