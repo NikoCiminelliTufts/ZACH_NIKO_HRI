@@ -86,7 +86,7 @@ def namesort(a):
 
 ## evaluate takes an Options object from options.py
 # and computes the SSIM of each predicted image vs its raw counterpart
-def evaluate(opt, debug=False):
+def evaluate(opt):
     # gather data
     predict_folders = glob.glob(os.path.join(opt.output_dir, 'v*', '*', '*', '*', '*'))
     if len(predict_folders) == 0:
@@ -99,16 +99,19 @@ def evaluate(opt, debug=False):
         # determine which folder to operate on next and set paths
         relative_folder = predict_folders[folder_i].split(os.sep)[-5:]
         if type(opt.behavior) != type(None) and relative_folder[-1] not in opt.behavior[0]:
-            print("skipping " + relative_folder[-1])
+            if opt.v == True:
+                print("skipping " + relative_folder[-1])
             continue
         raw_folder = os.path.join(opt.vis_raw_input_dir, *relative_folder)
         predict_folder = predict_folders[folder_i]
-        print(predict_folder)
+        if opt.v == True:
+            print(predict_folder)
 
         # skip folder if not included in desired output
         include = False
         data_filename = "_".join(relative_folder[1:])
-        print(data_filename)
+        if opt.v == True:
+            print(data_filename)
         train_path = os.path.join(opt.data_dir,"train",data_filename + "*")
         test_path = os.path.join(opt.data_dir,"test",data_filename + "*")
         
@@ -117,7 +120,8 @@ def evaluate(opt, debug=False):
         if opt.use_test and len(glob.glob(test_path)) > 0:
             include = True
         if include == False:
-            print("skipping")
+            if opt.v == True:
+                print("skipping")
             continue
         
         # load images making sure ordering is consistent
@@ -138,7 +142,7 @@ def evaluate(opt, debug=False):
             score, _ = metrics.calc_ssim(np.asarray(raw_image), np.asarray(predicted_image), multichannel=False)
             trial_scores.append(score)
 
-            if debug == True:
+            if opt.debug == True:
                 fig, ax = plt.subplots(1,2)
                 ax[0].imshow(raw_image)
                 ax[1].imshow(predicted_image)
@@ -164,6 +168,7 @@ if __name__ == "__main__":
     #     --pretrained_model [path to the model to predict with]
     # if doing evaluation, also requires
     #     --evaluate
+    #     --train AND/OR --test
     # if the input data has descriptors, must prepare raw data with descriptors using
     #     --use_descriptor
     opt = Options()
@@ -171,9 +176,10 @@ if __name__ == "__main__":
     opt.parser.add_argument('--predict', action="store_true", help="use this if you want to generate predicted images")
     opt.parser.add_argument('--evaluate', action="store_true", help="use this if you want to generate plots evaluating predictions")
     opt.parser.add_argument('--behavior', nargs="+", action="append", default=None, help="")
-    opt.parser.add_argument('--debug', action="store_true", help="")
+    opt.parser.add_argument('--debug', action="store_true", help="make plots at each evaluation step")
     opt.parser.add_argument('--use_train', action="store_true", help="Include training data in evaluation.")
     opt.parser.add_argument('--use_test', action="store_true", help="Include test data in evaluation.")
+    opt.parser.add_argument('-v', action="store_true", help="verbose mode (applies to evaluate only)")
     opt = opt.parse()
     opt.baseline = False
     opt.sequence_length = 20
@@ -184,7 +190,7 @@ if __name__ == "__main__":
     elif opt.evaluate == True and opt.predict == False:
         if not opt.use_train and not opt.use_test:
             raise Exception("You must specify either --use_train, --use_test, or both.")
-        evaluate(opt, opt.debug)
+        evaluate(opt)
 
     else:
         raise Exception("You must specify exactly one of --predict or --evaluate.")
