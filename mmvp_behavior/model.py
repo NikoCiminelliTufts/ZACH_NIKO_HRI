@@ -3,11 +3,11 @@ import torch
 from torch import nn
 import numpy as np
 import re
-from .networks.network import network
+from networks.network import network
 from torch.nn import functional as F
 from skimage.metrics import structural_similarity
-from .metrics import mse_to_psnr, peak_signal_to_noise_ratio, calc_ssim
-from .data import build_dataloader_CY101, generate_npy_vibro,generate_npy_haptic, \
+from metrics import mse_to_psnr, peak_signal_to_noise_ratio, calc_ssim
+from data import build_dataloader_CY101, generate_npy_vibro,generate_npy_haptic, \
     generate_npy_audio,generate_npy_vision, BEHAVIORS
 
 
