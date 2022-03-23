@@ -84,8 +84,9 @@ class Model:
                     one_image = (one_image.cpu().detach().numpy() * 255).astype(np.uint8)
                     one_gen_image = gen_image.permute([2, 3, 1, 0])[:,:,:,ii].squeeze()
                     one_gen_image = (one_gen_image.cpu().detach().numpy() * 255).astype(np.uint8)
-                    temp, _ = structural_similarity(one_image, one_gen_image, full=True, multichannel=True)
-                    recon_loss += torch.tensor(temp, requires_grad=True)
+                    # convert ssim into distance metric to be minimized as a loss metric
+                    sdist, _ = 1 - structural_similarity(one_image, one_gen_image, full=True, multichannel=True)
+                    recon_loss += torch.tensor(sdist, requires_grad=True)
                 psnr_i = peak_signal_to_noise_ratio(image, gen_image)
                 psnr += psnr_i
 
@@ -122,7 +123,7 @@ class Model:
     def train(self):
         for epoch_i in range(0, self.opt.epochs):
             self.train_epoch(epoch_i)
-            self.evaluate(epoch_i, ssim=True)
+            #self.evaluate(epoch_i, ssim=True)
             self.save_weight(epoch_i)
 
     def evaluate(self, epoch, keep_frame=False, keep_batch=False, ssim=False):
