@@ -85,7 +85,7 @@ class Model:
                     one_gen_image = gen_image.permute([2, 3, 1, 0])[:,:,:,ii].squeeze()
                     one_gen_image = (one_gen_image.cpu().detach().numpy() * 255).astype(np.uint8)
                     # convert ssim into distance metric to be minimized as a loss metric
-                    sdist, _ = 1 - structural_similarity(one_image, one_gen_image, multichannel=True)
+                    sdist = 1 - structural_similarity(one_image, one_gen_image, multichannel=True)
                     recon_loss += torch.tensor(sdist, requires_grad=True)
                 psnr_i = peak_signal_to_noise_ratio(image, gen_image)
                 psnr += psnr_i
