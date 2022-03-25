@@ -22,7 +22,10 @@ def predict(opt):
     # validate arguments
     if opt.pretrained_model == '':
         raise Exception("You must specify a trained model to make predictions with.")
-    selected_behaviors = [x[0] for x in opt.behavior]
+    if type(opt.behavior) == type(None):
+        selected_behaviors = []
+    else:
+        selected_behaviors = [x[0] for x in opt.behavior]
 
     # re-create model
     model = Model(opt)
@@ -39,7 +42,7 @@ def predict(opt):
         
         # bypass unused behaviors
         behavior_in_folder_name = folder.split(os.sep)[-1]
-        if type(opt.behavior) == type(None) and behavior_in_folder_name not in BEHAVIORS:
+        if len(selected_behaviors) == 0 and behavior_in_folder_name not in BEHAVIORS:
             continue
         elif behavior_in_folder_name not in selected_behaviors or behavior_in_folder_name not in BEHAVIORS:
             continue
