@@ -1,7 +1,7 @@
 import sys
 import matplotlib.pyplot as plt
 
-# read file as argument
+# read std out file from training run as argument
 file = sys.argv[1]
 
 loss = []
